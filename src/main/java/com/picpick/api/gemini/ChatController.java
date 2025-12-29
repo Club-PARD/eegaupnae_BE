@@ -1,4 +1,4 @@
-package com.picpick.gemini;
+package com.picpick.api.gemini;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;

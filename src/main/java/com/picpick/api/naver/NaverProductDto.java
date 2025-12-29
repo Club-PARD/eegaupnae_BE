@@ -1,4 +1,4 @@
-package com.picpick.naver;
+package com.picpick.api.naver;
 
 import lombok.Getter;
 import org.json.JSONObject;

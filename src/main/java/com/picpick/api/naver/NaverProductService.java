@@ -1,4 +1,4 @@
-package com.picpick.naver;
+package com.picpick.api.naver;
 
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;

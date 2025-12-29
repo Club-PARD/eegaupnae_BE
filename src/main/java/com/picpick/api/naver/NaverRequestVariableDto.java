@@ -1,4 +1,4 @@
-package com.picpick.naver;
+package com.picpick.api.naver;
 
 import lombok.Builder;
 import lombok.Data;

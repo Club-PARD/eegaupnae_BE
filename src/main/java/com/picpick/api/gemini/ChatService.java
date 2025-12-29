@@ -1,4 +1,4 @@
-package com.picpick.gemini;
+package com.picpick.api.gemini;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
