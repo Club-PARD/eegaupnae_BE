@@ -34,8 +34,8 @@ public class Mart {
     @Column(name = "document_file")
     private String documentFile;
 
-    @Column(name = "registration_number")
-    private String registrationNumber;
+    @Column(name = "brn")
+    private String brn;
 
     @OneToMany(mappedBy = "mart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MartItem> martItems;

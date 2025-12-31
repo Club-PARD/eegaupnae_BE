@@ -6,5 +6,5 @@ import lombok.Data;
 public class MartRegistrationRequest {
     private String name;
     private String address;
-    private String registrationNumber;
+    private String brn;
 }

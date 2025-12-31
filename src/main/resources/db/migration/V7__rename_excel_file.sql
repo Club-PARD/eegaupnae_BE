@@ -1,1 +1,0 @@
-ALTER TABLE mart CHANGE COLUMN excel_file document_file VARCHAR(255);

@@ -1,1 +1,0 @@
-ALTER TABLE mart ADD COLUMN registration_number VARCHAR(255);

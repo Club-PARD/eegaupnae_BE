@@ -25,7 +25,7 @@ public class S3Service {
         String originalName = file.getOriginalFilename();
         String fileName = dirName + "/" + UUID.randomUUID() + "_" + originalName;
 
-        String contentType = file.getContentType(); // application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet 등
+        String contentType = file.getContentType();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
