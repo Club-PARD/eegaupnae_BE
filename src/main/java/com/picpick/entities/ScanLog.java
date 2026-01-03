@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "scan_log")
 public class ScanLog {
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 

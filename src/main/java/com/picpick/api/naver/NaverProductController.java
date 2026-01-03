@@ -18,9 +18,9 @@ public class NaverProductController {
     @GetMapping("/search")
     public List<NaverProductDto> search(
             @RequestParam String query,
-            @RequestParam(required = false, defaultValue = "10") Integer display,
+            @RequestParam(required = false, defaultValue = "1") Integer display,
             @RequestParam(required = false, defaultValue = "1") Integer start,
-            @RequestParam(required = false, defaultValue = "sim") String sort) {
+            @RequestParam(required = false, defaultValue = "asc") String sort) {
         NaverRequestVariableDto variables = NaverRequestVariableDto.builder()
                 .query(query)
                 .display(display)

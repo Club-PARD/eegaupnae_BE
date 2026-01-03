@@ -21,6 +21,9 @@ public class OnlineItem {
     @Column(name = "naver_product_id")
     private String naverProductId;
 
+    @Column(name = "item_brand")
+    private String itemBrand;
+
     @Column(name = "item_name", nullable = false, unique = true)
     private String itemName;
 

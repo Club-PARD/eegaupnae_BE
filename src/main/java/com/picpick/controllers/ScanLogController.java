@@ -6,6 +6,7 @@ import com.picpick.entities.ScanLog;
 import com.picpick.mappers.ScanLogMapper;
 import com.picpick.services.ScanLogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,16 +23,15 @@ public class ScanLogController {
     @PostMapping
     public ResponseEntity<ScanLogResponse> createScanLog(@RequestBody ScanLogRequest request) {
         ScanLog savedLog = scanLogService.saveScanLog(request);
-        return ResponseEntity.ok(scanLogMapper.toDto(savedLog));
+        ScanLogResponse response = scanLogMapper.toDto(savedLog);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
     public ResponseEntity<List<ScanLogResponse>> getScanLogs() {
-        return ResponseEntity.ok(
-                scanLogService.getAllScanLogs().stream()
-                        .map(scanLogMapper::toDto)
-                        .toList()
-        );
+        List<ScanLogResponse> responses = scanLogService.getAllScanLogs().stream()
+                .map(scanLogMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(responses);
     }
 }
-

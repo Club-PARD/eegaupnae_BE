@@ -12,14 +12,16 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "mart_item")
+@Table(name = "mart_item", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "mart_id", "item_name" })
+})
 public class MartItem {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "item_name", nullable = false, unique = true)
+    @Column(name = "item_name", nullable = false)
     private String itemName;
 
     @Column(name = "item_price", nullable = false)

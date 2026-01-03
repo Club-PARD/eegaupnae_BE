@@ -1,6 +1,7 @@
 package com.picpick.api.aws;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +13,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.IOException;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class S3Service {
@@ -24,8 +26,9 @@ public class S3Service {
     public String uploadFile(MultipartFile file, String dirName) throws IOException {
         String originalName = file.getOriginalFilename();
         String fileName = dirName + "/" + UUID.randomUUID() + "_" + originalName;
-
         String contentType = file.getContentType();
+
+        log.info("Attempting to upload file: {} to bucket: {} as key: {}", originalName, bucket, fileName);
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -37,11 +40,13 @@ public class S3Service {
             s3Client.putObject(
                     putObjectRequest,
                     RequestBody.fromBytes(file.getBytes()));
+            log.info("Successfully uploaded file: {} to S3", fileName);
         } catch (Exception e) {
-            throw new IOException("S3 upload failed", e);
+            log.error("Failed to upload file {} to S3 bucket {}: {}", fileName, bucket, e.getMessage(), e);
+            throw new IOException("Failed to upload file to S3", e);
         }
 
-        return fileName; // 필요하면 URL 형태로 가공해서 리턴
+        return fileName;
     }
 
     public void deleteFile(String key) {

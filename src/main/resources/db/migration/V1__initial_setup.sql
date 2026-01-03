@@ -50,6 +50,7 @@ CREATE TABLE mart_item (
 CREATE TABLE online_item (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     naver_product_id VARCHAR(255),
+    item_Brand VARCHAR(255),
     item_name VARCHAR(255) NOT NULL UNIQUE,
     item_price INT NOT NULL,
     last_updated DATETIME(6)

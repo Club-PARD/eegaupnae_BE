@@ -7,42 +7,62 @@ import com.picpick.dtos.ScanLogRequest;
 import com.picpick.entities.*;
 import com.picpick.repositories.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ScanLogService {
 
     private final ScanLogRepository scanLogRepository;
     private final UserRepository userRepository;
-    private final MartRepository martRepository;
     private final MartItemRepository martItemRepository;
     private final OnlineItemRepository onlineItemRepository;
     private final NaverProductService naverProductService;
 
-    @Transactional
     public ScanLog saveScanLog(ScanLogRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "User not found with id: " + request.getUserId()));
+        log.info("Processing scan log for user ID: {}", request.getUserId());
 
-        // existing logic to resolve mart...
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.getUserId()));
+
         Mart mart = user.getCurrentMart();
+
+        // This is where your error is triggering
         if (mart == null) {
-            throw new IllegalArgumentException(
-                    "User is not currently associated with any mart. Please update user location first.");
+            log.error("Failed to create scan log: User {} has no current mart assigned.", user.getId());
+            throw new IllegalStateException("User is not at a mart location.");
         }
 
-        // 1) Ensure MartItem exists
+        log.info("User is currently at mart: {}", mart.getName());
+
+        // 1. Fetch Naver data outside of DB transaction
+        NaverProductDto cheapestOnline = null;
+        if (onlineItemRepository.findByItemName(request.getProductName()).isEmpty()) {
+            cheapestOnline = fetchCheapestFromNaver(request.getProductName());
+        }
+
+        // 2. Perform DB updates in a separate transaction
+        return executeDatabaseOperations(user, mart, request, cheapestOnline);
+    }
+
+    @Transactional
+    protected ScanLog executeDatabaseOperations(User user, Mart mart, ScanLogRequest request, NaverProductDto cheapest) {
         ensureMartItemExists(mart, request);
 
-        // 2) Ensure OnlineItem with cheapest Naver price exists
-        ensureOnlineItemFromNaver(request.getProductName());
+        if (cheapest != null) {
+            OnlineItem onlineItem = OnlineItem.builder()
+                    .naverProductId(cheapest.getProductId())
+                    .itemBrand(cheapest.getProductBrand())
+                    .itemName(request.getProductName())
+                    .itemPrice(cheapest.getLowestPrice())
+                    .build();
+            onlineItemRepository.save(onlineItem);
+        }
 
         ScanLog scanLog = ScanLog.builder()
                 .name(request.getProductName())
@@ -55,60 +75,26 @@ public class ScanLogService {
         return scanLogRepository.save(scanLog);
     }
 
+    private NaverProductDto fetchCheapestFromNaver(String productName) {
+        NaverRequestVariableDto var = NaverRequestVariableDto.builder()
+                .query(productName).display(1).start(1).sort("asc").build();
+        List<NaverProductDto> results = naverProductService.naverShopSearchAPI(var);
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+    private void ensureMartItemExists(Mart mart, ScanLogRequest request) {
+        martItemRepository.findByMartIdAndItemName(mart.getId(), request.getProductName())
+                .orElseGet(() -> martItemRepository.save(MartItem.builder()
+                        .itemName(request.getProductName())
+                        .itemPrice(request.getPrice())
+                        .startDate(LocalDate.now())
+                        .endDate(LocalDate.now())
+                        .mart(mart)
+                        .build()));
+    }
+
     @Transactional(readOnly = true)
     public List<ScanLog> getAllScanLogs() {
         return scanLogRepository.findAll();
     }
-
-    private void ensureMartItemExists(Mart mart, ScanLogRequest request) {
-        String itemName = request.getProductName();
-
-        martItemRepository.findByMartIdAndItemName(mart.getId(), itemName)
-                .orElseGet(() -> {
-                    MartItem newItem = MartItem.builder()
-                            .itemName(itemName)
-                            .itemPrice(request.getPrice())
-                            .startDate(LocalDate.now())    // or null / default
-                            .endDate(LocalDate.now())      // or some default
-                            .discountPercentage(null)      // not on sale
-                            .mart(mart)
-                            .build();
-
-                    return martItemRepository.save(newItem);
-                });
-    }
-
-
-    private void ensureOnlineItemFromNaver(String productName) {
-        // If already cached, do nothing
-        if (onlineItemRepository.findByItemName(productName).isPresent()) {
-            return;
-        }
-
-        // Build Naver request: sort by price ascending, 1 result
-        NaverRequestVariableDto var = NaverRequestVariableDto.builder()
-                .query(productName)
-                .display(1)      // only cheapest
-                .start(1)
-                .sort("asc")
-                .build();
-
-        List<NaverProductDto> results = naverProductService.naverShopSearchAPI(var);
-
-        if (results.isEmpty()) {
-            return;
-        }
-
-        NaverProductDto cheapest = results.get(0);
-
-        OnlineItem item = OnlineItem.builder()
-                .naverProductId(cheapest.getProductId())
-                .itemName(productName)
-                .itemPrice(cheapest.getLprice())
-                .build();
-
-        onlineItemRepository.save(item);
-    }
-
-
 }

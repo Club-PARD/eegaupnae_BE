@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class OnlineItemResponse {
     private Long id;
     private String naverProductId;
+    private String itemBrand;
     private String name;
     private Integer price;
     private LocalDateTime lastUpdated;
