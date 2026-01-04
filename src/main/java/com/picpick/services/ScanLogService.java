@@ -51,7 +51,8 @@ public class ScanLogService {
     }
 
     @Transactional
-    protected ScanLog executeDatabaseOperations(User user, Mart mart, ScanLogRequest request, NaverProductDto cheapest) {
+    protected ScanLog executeDatabaseOperations(User user, Mart mart, ScanLogRequest request,
+            NaverProductDto cheapest) {
         ensureMartItemExists(mart, request);
 
         if (cheapest != null) {
@@ -94,7 +95,7 @@ public class ScanLogService {
     }
 
     @Transactional(readOnly = true)
-    public List<ScanLog> getAllScanLogs() {
-        return scanLogRepository.findAll();
+    public List<ScanLog> getScanLogsByUserId(Long userId) {
+        return scanLogRepository.findByUserId(userId);
     }
 }

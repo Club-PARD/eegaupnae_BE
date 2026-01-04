@@ -58,6 +58,17 @@ public class UserService {
         return martMapper.toDto(marts.get(0));
     }
 
+    @Transactional
+    public MartResponse updateLocation(LocationVerificationRequest request) {
+        String uuid = request.getUuid();
+        User user = userRepository.findByUuid(uuid)
+                .orElseThrow(() -> new RuntimeException("User not found: " + uuid));
+        user.setCurrentLatitude(request.getLatitude());
+        user.setCurrentLongitude(request.getLongitude());
+        userRepository.save(user);
+        return martMapper.toDto(user.getCurrentMart());
+    }
+
     private final LoginLogRepository loginLogRepository;
 
     // guest UUID로 사용자 조회 또는 생성 + lastLogin 갱신

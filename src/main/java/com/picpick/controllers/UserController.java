@@ -50,4 +50,10 @@ public class UserController {
         MartResponse response = userService.verifyLocation(request);
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping("/location/update")
+    public ResponseEntity<MartResponse> updateLocation(@RequestBody LocationVerificationRequest request) {
+        MartResponse response = userService.updateLocation(request);
+        return ResponseEntity.ok(response);
+    }
 }

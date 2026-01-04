@@ -28,8 +28,8 @@ public class ScanLogController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScanLogResponse>> getScanLogs() {
-        List<ScanLogResponse> responses = scanLogService.getAllScanLogs().stream()
+    public ResponseEntity<List<ScanLogResponse>> getScanLogs(@RequestParam("userId") Long userId) {
+        List<ScanLogResponse> responses = scanLogService.getScanLogsByUserId(userId).stream()
                 .map(scanLogMapper::toDto)
                 .toList();
         return ResponseEntity.ok(responses);
