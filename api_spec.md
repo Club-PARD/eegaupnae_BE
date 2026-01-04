@@ -14,7 +14,19 @@
 | uuid | String | 사용자 고유 식별 (필수) |
 
 - **Response**:
-    - **신규 회원 (201 Created)**: `UserResponse` 객체
+    - **신규 회원 (201 Created)**:
+    ```json
+    {
+      "id": 1,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "role": "USER",
+      "createdAt": "2024-01-01T12:00:00",
+      "lastLogin": "2024-01-15T09:30:00",
+      "totalScans": 0,
+      "currentLongitude": 127.0,
+      "currentLatitude": 37.5
+    }
+    ```
     - **기존 회원 (200 OK)**: `{"message": "login successful"}`
 
 ### 1-2. 사용자 정보 조회
@@ -26,7 +38,19 @@
 | :--- | :--- | :--- |
 | uuid | String | 조회할 사용자의 고유 식별 (필수) |
 
-- **Response (200 OK)**: `UserResponse`
+- **Response (200 OK)**:
+    ```json
+    {
+      "id": 1,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "role": "USER",
+      "createdAt": "2024-01-01T12:00:00",
+      "lastLogin": "2024-01-15T09:30:00",
+      "totalScans": 42,
+      "currentLongitude": 127.123,
+      "currentLatitude": 37.567
+    }
+    ```
 
 ### 1-3. 위치 인증 및 현재 마트 할당
 - **URL**: `POST /users/location`
@@ -39,7 +63,28 @@
 | latitude | Double | 사용자의 현재 위도 (필수) |
 | longitude | Double | 사용자의 현재 경도 (필수) |
 
-- **Response (200 OK)**: `MartResponse` (인증된 마트 정보)
+- **Response (200 OK)**:
+    ```json
+    {
+      "id": 101,
+      "name": "행복마트",
+      "address": "서울시 강남구 테헤란로 123",
+      "longitude": 127.12345,
+      "latitude": 37.56789,
+      "documentFile": "mart_documents/abc.xlsx",
+      "createdAt": "2024-01-10T10:00:00",
+      "items": [
+        {
+          "id": 1,
+          "name": "사과",
+          "price": 2000,
+          "startDate": "2024-01-01",
+          "endDate": "2024-02-01",
+          "discountPercentage": 10
+        }
+      ]
+    }
+    ```
 
 ### 1-4. 위치 정보 업데이트
 - **URL**: `PATCH /users/location/update`
@@ -52,7 +97,7 @@
 | latitude | Double | 사용자의 현재 위도 (필수) |
 | longitude | Double | 사용자의 현재 경도 (필수) |
 
-- **Response (200 OK)**: `MartResponse`
+- **Response (200 OK)**: `MartResponse` (위와 동일)
 
 ---
 
@@ -73,7 +118,7 @@
 | brn | String | 사업자 등록 번호 (필수) |
 | file | MultipartFile | 상품 목록 엑셀 파일 (.xlsx) (필수) |
 
-- **Response (200 OK)**: `Long` (생성된 마트 ID)
+- **Response (200 OK)**: `101` (생성된 마트 ID)
 
 ---
 
@@ -93,7 +138,18 @@
 | price | Integer | 스캔한 상품 가격 (필수) |
 | description | String | 단위별 가격 (옵션) |
 
-- **Response (201 Created)**: `ScanLogResponse`
+- **Response (201 Created)**:
+    ```json
+    {
+      "id": 505,
+      "productName": "코카콜라",
+      "price": 1500,
+      "description": "100ml당 150원",
+      "scannedAt": "2024-01-15T14:30:00",
+      "martId": 101,
+      "martName": "행복마트"
+    }
+    ```
 
 ### 3-2. 사용자의 스캔 기록 조회
 - **URL**: `GET /scanlogs`
@@ -104,7 +160,29 @@
 | :--- | :--- | :--- |
 | userId | Long | 조회할 사용자의 시스템 ID (필수) |
 
-- **Response (200 OK)**: `List<ScanLogResponse>`
+- **Response (200 OK)**:
+    ```json
+    [
+      {
+        "id": 505,
+        "productName": "코카콜라",
+        "price": 1500,
+        "description": "100ml당 150원",
+        "scannedAt": "2024-01-15T14:30:00",
+        "martId": 101,
+        "martName": "행복마트"
+      },
+      {
+        "id": 504,
+        "productName": "신라면",
+        "price": 1200,
+        "description": "100g당 120원",
+        "scannedAt": "2024-01-14T10:00:00",
+        "martId": 101,
+        "martName": "행복마트"
+      }
+    ]
+    ```
 
 ---
 
@@ -123,6 +201,11 @@ Google Gemini를 활용한 고도화된 소비 분석 기능을 제공.
 | martPrice | Integer | 현재 마트 판매 가격 (필수) |
 | onlinePrice | Integer | 온라인 최저가 또는 비교 가격 (필수) |
 
-- **Response (200 OK)**: `ChatResponse` (AI 분석 리포트 내용)
+- **Response (200 OK)**:
+    ```json
+    {
+      "response": "분석 결과, 이 상품은 마트가가 온라인 최저가보다 약 10% 저렴하여 높은 경쟁력을 가집니다. VFM 지수는 4.5점으로 '강력 추천' 등급입니다. 카테고리는 [신선식품]으로 분류됩니다."
+    }
+    ```
 
 ---
