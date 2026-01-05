@@ -18,9 +18,21 @@
 - **Migration**: Flyway
 - **Mapping**: MapStruct 1.6.2
 - **Documentation**: SpringDoc OpenAPI / Swagger UI
-- **Build Tool**: Gradle
+---
 
-## AI Analysis Logic (VFM Index)
+## System Flow: AI Analysis Sequence
+
+### Logical Flow
+1. **요청 수신 (Request Intake)**: 클라이언트가 상품 상세 정보와 `scanLogId`를 포함한 `AnalysisRequest`를 전송.
+2. **프롬프트 구성 (Prompt Orchestration)**: `AnalysisService`가 MECE 최적화된 `ANALYSIS_PROMPT`에 실시간 데이터를 치환하여 정교한 분석 프롬프트를 생성.
+3. **AI 지능 분석 (AI Intelligence)**: Google Gemini 모델이 입력을 분석하여 고도화된 JSON 형태의 평가 결과를 도출.
+4. **데이터 정규화 및 저장 (Data Persistence)**: 
+    - AI 응답에서 불필요한 마크다운을 제거하고 `AnalysisAIResponse` 객체로 파싱.
+    - `scanLogId`가 있는 경우, 중복 저장을 방지하기 위해 기존 리포트 유무를 확인.
+    - `AnalysisMapper`를 통해 최신 분석 결과를 `AnalysisReport` 엔티티에 반영 및 저장.
+5. **최종 결과 전달 (Final Delivery)**: 구조화된 분석 데이터를 클라이언트에 반환하여 즉각적인 리포트 화면 구성을 지원.
+
+---
 PicPick은 단순히 저렴한 가격이 아닌, **가치(Value)** 중심의 평가를 위해 자체 수식을 사용합니다.
 
 ### 가성비 지수 (VFM Index) 수식
