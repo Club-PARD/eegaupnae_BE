@@ -52,7 +52,7 @@ $$VFM\_Index = \left( \frac{\sum(M_i \times W_i) \times R}{\ln(\text{Price\_Rati
 6. 홈 리빙 (시간/유지비당 가격)
 7. 펫/라이프 (끼니/개당 가격)
 
-## 📄 Documentation
+## Documentation
 - **API Spec**: [api_spec.md](api_spec.md)
 - **ER Diagram**: [er_diagram.md](er_diagram.md)
 - **Swagger UI**: `http://localhost:8080/swagger-ui.html`
