@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
-
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
@@ -27,7 +26,7 @@ public class ChatController {
     }
 
     @PostMapping("/analyze")
-    public ChatResponse analyzeProduct(@RequestBody ProductRequest request) {
-        return analysisService.analyzeProduct(request);
+    public ChatResponse analyzeProduct(@RequestBody AnalysisRequest request) {
+        return new ChatResponse(analysisService.generateReport(request));
     }
 }
