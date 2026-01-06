@@ -20,6 +20,10 @@ public class CorsConfig {
 
         config.addAllowedOriginPattern("*"); // 모든 도메인 허용 (Credentials true일 경우 Pattern 사용)
 
+        // 수정 후 (실제 도메인으로 제한)
+        config.addAllowedOrigin("https://pickpick.store"); // 본인 도메인
+        config.addAllowedOrigin("http://localhost:3000");  // 로컬 프론트엔드 테스트용
+
         config.addAllowedHeader("*"); // 모든 http header 허용
 
         config.addAllowedMethod("*"); // 모든 http method 허용
