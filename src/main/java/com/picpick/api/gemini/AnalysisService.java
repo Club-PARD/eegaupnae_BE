@@ -6,6 +6,7 @@ import com.picpick.repositories.ScanLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +66,7 @@ public class AnalysisService {
             2. 픽스코어(VFM Index) 산출 공식
             VFM_Index = ((Sum(Mi * Wi) * R) / ln(Price_Ratio + e - 1)) * Product(Alpha_j)
             - (0.0~5.0점 산출 / Price_Ratio = 현재 마트 판매가 / 온라인 최저가)
-            
+
             2.1 일반 텍스트 버전
             - 가성비 지수(VFM Index) = [ {Σ(지표 점수 × 가중치) × 신뢰도 계수} / ln(가격 비율 + e - 1) ] × 보정 계수 총곱
                 = 가성비 지수(VFM Index) = [ {Σ(Mi × Wi) × R} / ln(P ratio + e - 1) ] × alpha
@@ -122,6 +123,9 @@ public class AnalysisService {
         try {
             content = chatClient.prompt()
                     .user(userMessage)
+                    .options(GoogleGenAiChatOptions.builder()
+                            .googleSearchRetrieval(true)
+                            .build())
                     .call()
                     .content();
             log.info("AI Response received (length: {})", content != null ? content.length() : 0);
@@ -149,7 +153,8 @@ public class AnalysisService {
 
             // 3. If scanLogId is provided, save the report
             if (request.getScanLogId() != null && response != null) {
-                scanLogRepository.findById(request.getScanLogId()).ifPresent(scanLog -> saveAnalysisReport(scanLog, response));
+                scanLogRepository.findById(request.getScanLogId())
+                        .ifPresent(scanLog -> saveAnalysisReport(scanLog, response));
             }
 
             return response;

@@ -57,6 +57,7 @@ dependencies {
     implementation 'org.json:json:20240303'
     implementation 'org.apache.poi:poi:5.2.5'
     implementation 'org.apache.poi:poi-ooxml:5.2.5'
+    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 }
 
 dependencyManagement {
