@@ -8,5 +8,10 @@ public interface MartMapper {
 
     MartMapInfo toMapInfo(Mart mart);
 
+    @org.mapstruct.Mapping(target = "id", ignore = true)
+    @org.mapstruct.Mapping(target = "documentFile", ignore = true)
+    @org.mapstruct.Mapping(target = "longitude", ignore = true)
+    @org.mapstruct.Mapping(target = "latitude", ignore = true)
+    @org.mapstruct.Mapping(target = "martItems", ignore = true)
     Mart toEntity(SignupRequest request);
 }
