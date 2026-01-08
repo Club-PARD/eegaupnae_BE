@@ -58,6 +58,7 @@ public class ScanService {
                         scan.setNaverName(es.getNaverName());
                         scan.setNaverPrice(es.getNaverPrice());
                         scan.setNaverImage(es.getNaverImage());
+                        scan.setAiUnitPrice(es.getAiUnitPrice());
                     } else {
                         Naver naver = naverService.searchCheapest(item.getScanName());
                         if (naver != null) {
@@ -68,13 +69,13 @@ public class ScanService {
                             scan.setNaverPrice(naver.getLprice());
                             scan.setNaverImage(naver.getImage());
                         }
-                    }
 
-                    // Gemini Unit Price (Currently disabled by user)
-                    // UnitPriceResponse unitPriceResponse = geminiService
-                    // .getUnitPrice(new UnitPriceRequest(item.getScanName(), item.getScanPrice()));
-                    // scan.setAiUnitPrice(unitPriceResponse.getAiUnitPrice());
-                    scan.setAiUnitPrice(null);
+                        // Gemini Unit Price for new item
+//                        UnitPriceResponse unitPriceResponse = geminiService
+//                                .getUnitPrice(new UnitPriceRequest(item.getScanName(), item.getScanPrice()));
+//                        scan.setAiUnitPrice(unitPriceResponse.getAiUnitPrice());
+                        scan.setAiUnitPrice(null);
+                    }
 
                     return scan;
                 })
