@@ -19,113 +19,31 @@ public class GeminiService {
     private final UserRepository userRepository;
 
     public GeminiService(ChatClient.Builder chatClientBuilder,
-            GeminiRepository geminiRepository,
-            GeminiMapper geminiMapper,
-            UserRepository userRepository) {
+                         GeminiRepository geminiRepository,
+                         GeminiMapper geminiMapper,
+                         UserRepository userRepository) {
         this.chatClient = chatClientBuilder.build();
         this.geminiRepository = geminiRepository;
         this.geminiMapper = geminiMapper;
         this.userRepository = userRepository;
     }
 
-    private static final String REFINE_QUERY_PROMPT = """
-            [System Role]
-            당신은 온라인 쇼핑 검색어 최적화 전문가입니다. 사용자가 입력한 [상품명]을 분석하여, 네이버 쇼핑에서 가장 정확한 검색 결과를 얻을 수 있도록 검색어를 정제하십시오.
-
-            **[정제 가이드라인]**
-            1. **수량 및 개수 보존 (가장 중요)**:
-               - 묶음 상품, 대용량 번들 등 '개수' 정보가 있다면 절대 누락하지 말고 명확한 형식으로 포함하십시오 (예: 20입, 24캔, 6봉, 10개입, 등).
-               - "낱개" 또는 "단품" 정보가 명시되어 있다면 이를 반영하십시오. 명시되어 있지 않을 경우 혹은 '개수'가 없을 겨우 하나입니다 (예: 1입, 1캔, 1봉, 1개입, 1개, 등).
-            2. **유닛 정규화**:
-               - 리터(L)는 밀리리터(mL)로 통일 (예: 2.1L -> 2100ml).
-               - 킬로그램(kg)은 그램(g)으로 변환 (예: 1.2kg -> 1200g).
-            3. **브랜드 강조**: 상품명에 브랜드가 포함되어 있다면 검색어 맨 앞으로 배치하십시오.
-            4. **불필요한 수식어 제거**: "신선한", "특가", "무료배송", "증정" 등 검색에 방해되는 단어는 제거하십시오.
-            5. **표준 명칭 사용**: 약어나 오타가 있다면 표준 명칭으로 교정하십시오.
-
-            **[입력 데이터]**
-            상품명: {scanName}
-
-            **[JSON 출력 템플릿]**
-            {
-                "refinedQuery": "정제된 검색어 (예: 코카콜라 355ml 24캔)"
-            }
-            """;
-
-    public SearchRefineResponse refineSearchQuery(SearchRefineRequest request) {
-        log.info("Refining search query for: {}", request.getScanName());
-
-        String userInput = REFINE_QUERY_PROMPT.replace("{scanName}", request.getScanName());
-
-        try {
-            SearchRefineResponse response = chatClient.prompt()
-                    .user(userInput)
-                    .options(GoogleGenAiChatOptions.builder()
-                            .googleSearchRetrieval(false)
-                            .build())
-                    .call()
-                    .entity(new ParameterizedTypeReference<SearchRefineResponse>() {
-                    });
-
-            if (response == null || response.getRefinedQuery() == null) {
-                log.warn("Gemini returned null refined query for: {}", request.getScanName());
-                return new SearchRefineResponse(request.getScanName());
-            }
-
-            log.info("Refined query: {} -> {}", request.getScanName(), response.getRefinedQuery());
-            return response;
-        } catch (Exception e) {
-            log.error("Error during search query refinement for '{}': {}", request.getScanName(), e.getMessage());
-            return new SearchRefineResponse(request.getScanName());
-        }
-    }
-
-    // private static final String UNIT_PRICE_PROMPT = """
-    // 픽단가 전용 분석 프롬프트]
-    // [System Role]
-    // 당신은 '픽픽' 서비스의 픽단가 환산 엔진입니다. 입력된 [상품명], [총 용량/구성], [판매가]를 바탕으로 소비자가 실제 체감하는
-    // '회당 비용'을 즉시 산출합니다. 부연 설명 없이 모바일 UI용 결과값만 짧고 간결하게 출력하십시오.
-
-    // **[픽단가 산출 가이드라인]**
-    // 소모품 판정: 가전, 가구, 비소모품 등 비소모성 내구재는 "픽단가 산출 대상 제외 품목"으로 출력하고 종료합니다.
-
-    // 카테고리별 환산 단위:
-    // - 신선: 1인분(고기 200g, 쌀 150g 등) → **"1인분에 000원꼴"
-    // - 리빙: 고기 200g, 1회 사용/1개월 유지비 기준 → **"사용기한당 000원꼴"
-    // - 가공: 1인분/1팩 기준 → **"한 끼에 000원꼴"
-    // - 기호: 1컵(200ml) 또는 1봉 기준 → "한 잔/봉지에 000원"
-    // - 위생: 1회(세제 50ml)/1롤(휴지) 기준 → **"한 번/한 롤에 000원꼴"
-    // - 뷰티: 1회(5ml)/1장(팩) 기준 → **"한 번/한 장에 000원꼴"
-    // - 펫/라이프: 한 끼(사료 50g)/1개 기준 → **"한 끼/한 개에 000원꼴"
-
-    // **[입력 데이터]**
-    // 상품명: {scanName}
-    // 상품 가격: {scanPrice}
-
-    // **[JSON 출력 템플릿]**
-    // {
-    // "aiUnitPrice": "환산 결과값 (예: 한 끼에 990원꼴)"
-    // }
-    // """;
     private static final String UNIT_PRICE_PROMPT = """
-            [픽단가 전용 분석 프롬프트]
+            픽단가 전용 분석 프롬프트]
             [System Role]
-            당신은 '픽픽' 서비스의 정밀 픽단가 환산 엔진입니다. 입력된 [상품명]의 용량/개수와 [상품 가격]({scanPrice})만을 사용하여 정확한 단위당 가격을 산출하십시오.
-            결과는 반드시 마트 판매가({scanPrice})를 기준으로 해야 합니다.
+            당신은 '픽픽' 서비스의 픽단가 환산 엔진입니다. 입력된 [상품명], [총 용량/구성], [판매가]를 바탕으로 소비자가 실제 체감하는 '회당 비용'을 즉시 산출합니다. 부연 설명 없이 모바일 UI용 결과값만 짧고 간결하게 출력하십시오.
 
-            **[픽단가 산출 로직]**
-            1. 용량/개수 파악: 상품명에서 총 용량(g, ml) 또는 개수(입, 팩, 봉)를 추출하십시오.
-               - 개수 정보가 없으면 '1개'로 간주하십시오.
-            2. 수학적 계산: {scanPrice} / 총 용량(또는 개수)을 계산하십시오.
-            3. 형식 통일:
-               - 신선/가공: "100g당 000원", "1인분에 000원"
-               - 리빙/위생: "한 번에 000원", "한 롤에 000원"
-               - 음료/기호: "100ml당 000원", "한 잔에 000원"
+            **[픽단가 산출 가이드라인]**
+            소모품 판정: 가전, 가구, 비소모품 등 비소모성 내구재는 "픽단가 산출 대상 제외 품목"으로 출력하고 종료합니다.
 
-            **[주의사항]**
-            - 타 쇼핑몰 가격이나 네이버 최저가는 절대 고려하지 마십시오.
-            - 오직 마트 판매가({scanPrice})를 기준으로 산출하십시오.
-            - 부연 설명 없이 JSON만 출력하십시오.
+            카테고리별 환산 단위:
+            - 신선: 1인분(고기 200g, 쌀 150g 등) → **"1인분에 000원꼴"
+            - 리빙: 고기 200g, 1회 사용/1개월 유지비 기준 → **"사용기한당 000원꼴"
+            - 가공: 1인분/1팩 기준 → **"한 끼에 000원꼴"
+            - 기호: 1컵(200ml) 또는 1봉 기준 → "한 잔/봉지에 000원"
+            - 위생: 1회(세제 50ml)/1롤(휴지) 기준 → **"한 번/한 롤에 000원꼴"
+            - 뷰티: 1회(5ml)/1장(팩) 기준 → **"한 번/한 장에 000원꼴"
+            - 펫/라이프: 한 끼(사료 50g)/1개 기준 → **"한 끼/한 개에 000원꼴"
 
             **[입력 데이터]**
             상품명: {scanName}
@@ -133,7 +51,7 @@ public class GeminiService {
 
             **[JSON 출력 템플릿]**
             {
-                "aiUnitPrice": "환산 결과값 (예: 100g당 450원)"
+                "aiUnitPrice": "환산 결과값 (예: 한 끼에 990원꼴)"
             }
             """;
 

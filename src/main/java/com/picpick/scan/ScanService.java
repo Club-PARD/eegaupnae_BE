@@ -30,7 +30,7 @@ public class ScanService {
         Long userId = batchRequest.getUserId();
 
         log.info("Processing scan log for user ID: {}", userId);
-        User user = userRepository.findWithMartById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
         // Update user's total scan count
@@ -45,11 +45,7 @@ public class ScanService {
                     scan.setMart(user.getMart());
 
                     // Naver Shopping data
-                    SearchRefineResponse refinedResponse = geminiService
-                            .refineSearchQuery(new SearchRefineRequest(item.getScanName()));
-                    String refinedQuery = refinedResponse.getRefinedQuery();
-
-                    Naver naver = naverService.searchCheapest(refinedQuery);
+                    Naver naver = naverService.searchCheapest(item.getScanName());
                     if (naver != null) {
                         scan.setNaverProductId(naver.getProductId());
                         scan.setNaverBrand(naver.getBrand());
@@ -61,7 +57,7 @@ public class ScanService {
 
                     // Gemini Unit Price
                     UnitPriceResponse unitPriceResponse = geminiService
-                            .getUnitPrice(new UnitPriceRequest(refinedQuery, item.getScanPrice()));
+                            .getUnitPrice(new UnitPriceRequest(item.getScanName(), item.getScanPrice()));
                     scan.setAiUnitPrice(unitPriceResponse.getAiUnitPrice());
 
                     return scan;
