@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -45,20 +46,35 @@ public class ScanService {
                     scan.setMart(user.getMart());
 
                     // Naver Shopping data
-                    Naver naver = naverService.searchCheapest(item.getScanName());
-                    if (naver != null) {
-                        scan.setNaverProductId(naver.getProductId());
-                        scan.setNaverBrand(naver.getBrand());
-                        scan.setNaverMaker(naver.getMaker());
-                        scan.setNaverName(naver.getTitle().replaceAll("<[^>]*>", ""));
-                        scan.setNaverPrice(naver.getLprice());
-                        scan.setNaverImage(naver.getImage());
+                    Optional<Scan> existingScan = scanRepository
+                            .findFirstByScanNameOrderByScannedAtDesc(item.getScanName());
+
+                    if (existingScan.isPresent()) {
+                        Scan es = existingScan.get();
+                        log.info("Reusing existing Naver data for: {}", item.getScanName());
+                        scan.setNaverProductId(es.getNaverProductId());
+                        scan.setNaverBrand(es.getNaverBrand());
+                        scan.setNaverMaker(es.getNaverMaker());
+                        scan.setNaverName(es.getNaverName());
+                        scan.setNaverPrice(es.getNaverPrice());
+                        scan.setNaverImage(es.getNaverImage());
+                    } else {
+                        Naver naver = naverService.searchCheapest(item.getScanName());
+                        if (naver != null) {
+                            scan.setNaverProductId(naver.getProductId());
+                            scan.setNaverBrand(naver.getBrand());
+                            scan.setNaverMaker(naver.getMaker());
+                            scan.setNaverName(naver.getTitle().replaceAll("<[^>]*>", ""));
+                            scan.setNaverPrice(naver.getLprice());
+                            scan.setNaverImage(naver.getImage());
+                        }
                     }
 
-                    // Gemini Unit Price
-                    UnitPriceResponse unitPriceResponse = geminiService
-                            .getUnitPrice(new UnitPriceRequest(item.getScanName(), item.getScanPrice()));
-                    scan.setAiUnitPrice(unitPriceResponse.getAiUnitPrice());
+                    // Gemini Unit Price (Currently disabled by user)
+                    // UnitPriceResponse unitPriceResponse = geminiService
+                    // .getUnitPrice(new UnitPriceRequest(item.getScanName(), item.getScanPrice()));
+                    // scan.setAiUnitPrice(unitPriceResponse.getAiUnitPrice());
+                    scan.setAiUnitPrice(null);
 
                     return scan;
                 })
