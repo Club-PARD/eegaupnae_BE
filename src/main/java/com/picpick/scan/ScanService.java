@@ -97,10 +97,7 @@ public class ScanService {
         List<Scan> scans = scanRepository.findAllByUser_Id(userId);
 
         // Update isShown to true when fetched
-        scans.forEach(scan -> {
-            log.info("Scan retrieved: {}, naverImage: {}", scan.getScanName(), scan.getNaverImage());
-            scan.setIsShown(true);
-        });
+        scans.forEach(scan -> scan.setIsShown(true));
 
         // Synchronously try to reuse existing analysis for scans that don't have one
         List<Scan> scansToAnalyze = scans.stream()
