@@ -221,6 +221,18 @@ public class GeminiService {
                 return;
             }
             Gemini entity = geminiMapper.toEntity(response);
+
+            // Override AI-generated Naver fields with actual Scan data
+            entity.setNaverImage(scan.getNaverImage());
+            entity.setNaverBrand(scan.getNaverBrand());
+            entity.setScanName(scan.getScanName());
+            if (scan.getScanPrice() != null) {
+                entity.setScanPrice(scan.getScanPrice().doubleValue());
+            }
+            if (scan.getNaverPrice() != null) {
+                entity.setNaverPrice(scan.getNaverPrice().doubleValue());
+            }
+
             entity.setScan(scan);
 
             userRepository.findById(userId).ifPresent(entity::setUser);
@@ -238,7 +250,7 @@ public class GeminiService {
         return geminiRepository.findFirstByScanNameOrderByIdDesc(scan.getScanName())
                 .map(existingGemini -> {
                     log.info("Reusing existing Gemini analysis for: {}", scan.getScanName());
-                    Gemini newGemini = copyGemini(existingGemini);
+                    Gemini newGemini = copyGemini(existingGemini, scan);
                     newGemini.setScan(scan);
                     scan.setGemini(newGemini); // Maintain bidirectional consistency
                     userRepository.findById(userId).ifPresent(newGemini::setUser);
@@ -246,16 +258,19 @@ public class GeminiService {
                 });
     }
 
-    private Gemini copyGemini(Gemini source) {
+    private Gemini copyGemini(Gemini source, Scan currentScan) {
+        // Use current Scan's Naver data, not the old Gemini's
         Gemini target = Gemini.builder()
-                .naverImage(source.getNaverImage())
-                .naverBrand(source.getNaverBrand())
-                .scanName(source.getScanName())
+                .naverImage(currentScan.getNaverImage())
+                .naverBrand(currentScan.getNaverBrand())
+                .scanName(currentScan.getScanName())
                 .category(source.getCategory())
                 .pickScore(source.getPickScore())
                 .reliabilityScore(source.getReliabilityScore())
-                .scanPrice(source.getScanPrice())
-                .naverPrice(source.getNaverPrice())
+                .scanPrice(currentScan.getScanPrice() != null ? currentScan.getScanPrice().doubleValue()
+                        : source.getScanPrice())
+                .naverPrice(currentScan.getNaverPrice() != null ? currentScan.getNaverPrice().doubleValue()
+                        : source.getNaverPrice())
                 .priceDiff(source.getPriceDiff())
                 .isCheaper(source.getIsCheaper())
                 .aiUnitPrice(source.getAiUnitPrice())
