@@ -283,7 +283,9 @@
 | `aiUnitPrice` | String | 단위 가격 |
 | `indexes` | Array | 5대지표 정보 |
 | `qualitySummary` | String | 재풉 질 분석 요약 |
+| `qualityState` | Boolean | 질 평가 상태 (긍정: true, 부정: false) |
 | `priceSummary` | String | 가격 분석 요약 |
+| `priceState` | Boolean | 가격 평가 상태 (긍정: true, 부정: false) |
 | `conclusion` | String | 결론: 상품을 살지 말지 추천 |
 
 예시: 
@@ -324,7 +326,9 @@
     }
   ],
   "qualitySummary": "비비고 브랜드의 검증된 맛과 품질, 깊고 진한 사골 국물을 간편하게 즐길 수 있는 제품.",
+  "qualityState": true,
   "priceSummary": "마트 가격 4,400원은 온라인 최저가 950원 대비 363% 비싸 가격 경쟁력이 매우 낮음. 픽단가 또한 온라인 구매 시 훨씬 저렴.",
+  "priceState": false,
   "conclusion": "보류 권장 - 품질은 우수하나, 마트 구매 시 가격 메리트가 전혀 없어 온라인 구매를 적극 추천."
 }
 ```

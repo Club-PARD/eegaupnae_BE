@@ -24,7 +24,9 @@ public class GeminiResponse {
     private Boolean isCheaper;
     private String aiUnitPrice;
     private List<IndicatorDto> indexes;
+    private Boolean qualityState;
     private String qualitySummary;
+    private Boolean priceState;
     private String priceSummary;
     private String conclusion;
 

@@ -180,7 +180,9 @@ public class GeminiService {
                 }
               ],
               "qualitySummary": "제품 본연의 가치와 성분 우수성 요약",
+              "qualityState": "qualitySummary 요약이 긍정적이면 'true' 부정적이면 'false'",
               "priceSummary": "현재 가격의 시장 경쟁력 및 픽단가 적절성 평가",
+              "priceState": "priceSummary 요약이 긍정적이면 'true' 부정적이면 'false'",
               "conclusion": "구매/보류 권장 여부 및 이유 요약"
             }
             """;
@@ -257,7 +259,9 @@ public class GeminiService {
                 .priceDiff(source.getPriceDiff())
                 .isCheaper(source.getIsCheaper())
                 .aiUnitPrice(source.getAiUnitPrice())
+                .qualityState(source.getQualityState())
                 .qualitySummary(source.getQualitySummary())
+                .priceState(source.getPriceState())
                 .priceSummary(source.getPriceSummary())
                 .conclusion(source.getConclusion())
                 .build();

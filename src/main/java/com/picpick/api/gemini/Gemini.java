@@ -57,8 +57,14 @@ public class Gemini {
     @CollectionTable(name = "gemini_indicators", joinColumns = @JoinColumn(name = "gemini_id"))
     private List<Indicator> indexes;
 
+    @Column(name = "quality_state")
+    private Boolean qualityState;
+
     @Column(name = "quality_summary")
     private String qualitySummary;
+
+    @Column(name = "price_state")
+    private Boolean priceState;
 
     @Column(name = "price_summary")
     private String priceSummary;
