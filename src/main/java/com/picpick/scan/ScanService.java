@@ -44,6 +44,7 @@ public class ScanService {
                     scan.setScannedAt(LocalDateTime.now());
                     scan.setUser(user);
                     scan.setMart(user.getMart());
+                    scan.setIsShown(true); // Set to true when posted
 
                     // Naver Shopping data
                     Optional<Scan> existingScan = scanRepository
@@ -96,9 +97,6 @@ public class ScanService {
     public List<ScanResponse> getScans(Long userId) {
         List<Scan> scans = scanRepository.findAllByUser_Id(userId);
 
-        // Update isShown to true when fetched
-        scans.forEach(scan -> scan.setIsShown(true));
-
         // Synchronously try to reuse existing analysis for scans that don't have one
         List<Scan> scansToAnalyze = scans.stream()
                 .filter(scan -> scan.getGemini() == null)
@@ -116,6 +114,26 @@ public class ScanService {
     }
 
     @Transactional
+    public List<ScanResponse> showScans(Long userId) {
+        List<Scan> scans = scanRepository.findAllByUser_Id(userId);
+        
+        // Filter only new scans (isShown = false)
+        List<Scan> newScans = scans.stream()
+                .filter(scan -> scan.getIsShown() == null || !scan.getIsShown())
+                .collect(Collectors.toList());
+        
+        // Mark them as shown
+        newScans.forEach(scan -> scan.setIsShown(true));
+        
+        log.info("Showing {} new scans for user ID: {}", newScans.size(), userId);
+        
+        return newScans.stream()
+                .map(scanMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+
+    @Transactional
     public void hideScans(Long userId) {
         List<Scan> scans = scanRepository.findAllByUser_Id(userId);
         scans.forEach(scan -> scan.setIsShown(false));
@@ -124,5 +142,12 @@ public class ScanService {
 
     public void deleteScannedItem(Long scanId) {
         scanRepository.deleteById(scanId);
+    }
+
+    @Transactional
+    public void deleteAllScans(Long userId) {
+        List<Scan> scans = scanRepository.findAllByUser_Id(userId);
+        scanRepository.deleteAll(scans);
+        log.info("Deleted {} scans for user ID: {}", scans.size(), userId);
     }
 }

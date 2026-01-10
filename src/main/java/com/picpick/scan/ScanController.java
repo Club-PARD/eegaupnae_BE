@@ -41,4 +41,10 @@ public class ScanController {
         scanService.deleteScannedItem(id);
         return ResponseEntity.ok(Map.of("message", "상품 삭제되었습니다."));
     }
+
+    @DeleteMapping()
+    public ResponseEntity<?> deleteAllScans(@RequestParam Long userId) {
+        scanService.deleteAllScans(userId);
+        return ResponseEntity.ok(Map.of("message", "모든 상품이 삭제되었습니다."));
+    }
 }
